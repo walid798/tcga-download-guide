@@ -101,8 +101,8 @@ metadata/
     BRCA_Manifest.txt
 
 These files should be preserved unchanged.
-
-## Troubleshooting: "Can't move files" (GDC Transfer Tool / gdc-client on Windows)
+```
+## 6. Troubleshooting: "Can't move files" (GDC Transfer Tool / gdc-client on Windows)
 
 On Windows, the GDC Transfer Tool may **download into a temporary cache on `C:`** first, then **move** files to your target directory.  
 If `C:` is low on space (or the TEMP directory is locked), you may see errors like **"can't move the files"**.
