@@ -101,3 +101,26 @@ metadata/
     BRCA_Manifest.txt
 
 These files should be preserved unchanged.
+
+## Troubleshooting: "Can't move files" (GDC Transfer Tool / gdc-client on Windows)
+
+On Windows, the GDC Transfer Tool may **download into a temporary cache on `C:`** first, then **move** files to your target directory.  
+If `C:` is low on space (or the TEMP directory is locked), you may see errors like **"can't move the files"**.
+
+### Quick fix (temporary, recommended): set TEMP/TMP to the target drive (one session)
+
+1. Create a temp folder on the same drive where you want to store downloads (example: `D:`).
+2. Set `TEMP` and `TMP` for the current PowerShell session.
+3. Launch the Transfer Tool from the same terminal (so it inherits the variables).
+
+```powershell
+# Example: target drive is D:
+mkdir D:\TempTCGA -Force | Out-Null
+$env:TEMP="D:\TempTCGA"
+$env:TMP="D:\TempTCGA"
+
+# Option A: if you use gdc-client CLI
+gdc-client download -m manifest.txt -d D:\TCGA
+
+# Option B: if you use the GUI Transfer Tool, launch it from here
+# & "C:\Path\To\GDCTransferTool.exe"
