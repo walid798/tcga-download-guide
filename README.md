@@ -5,7 +5,7 @@
 **A comprehensive, reproducible toolkit for downloading and organizing TCGA data from the GDC portal**
 
 [![Python](https://img.shields.io/badge/Python-≥3.8-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green)](LICENSE)
 [![GDC](https://img.shields.io/badge/Data-NCI%20GDC-orange)](https://portal.gdc.cancer.gov/)
 [![Stars](https://img.shields.io/github/stars/YOUR_USERNAME/YOUR_REPO?style=social)](https://github.com/YOUR_USERNAME/YOUR_REPO)
 
