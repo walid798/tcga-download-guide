@@ -203,12 +203,12 @@ If this repository saved you time or helped your research, please consider:
 
 **⭐ Starring the repository** — it helps others discover this toolkit and motivates continued maintenance.
 
-[![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/YOUR_REPO?style=for-the-badge&logo=github&color=yellow)](https://github.com/YOUR_USERNAME/YOUR_REPO/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/YOUR_REPO?style=for-the-badge&logo=github&color=yellow)](https://github.com/walid798/tcga-download-guide)
 
 </div>
 
 You can also contribute by:
-- 🐛 Opening an [issue](https://github.com/YOUR_USERNAME/YOUR_REPO/issues) to report bugs or suggest improvements
+- 🐛 Opening an [issue](https://github.com/walid798/tcga-download-guide/issues) to report bugs or suggest improvements
 - 🔀 Submitting a pull request with enhancements
 - 📣 Sharing this repo with colleagues working with TCGA data
 
