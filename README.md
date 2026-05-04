@@ -1,203 +1,230 @@
-# TCGA Download Guide
+<div align="center">
 
-**A comprehensive, step-by-step toolkit for downloading and organizing TCGA data from the GDC portal**
+# 🧬 TCGA Download Guide
 
-# TCGA Download & Organization Guide
+**A comprehensive, reproducible toolkit for downloading and organizing TCGA data from the GDC portal**
 
-A focused, reproducible workflow for **downloading and organizing TCGA data**  
-with an emphasis on **whole-slide images (WSI)** and **case-centric structure**.
+[![Python](https://img.shields.io/badge/Python-≥3.8-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![GDC](https://img.shields.io/badge/Data-NCI%20GDC-orange)](https://portal.gdc.cancer.gov/)
+[![Stars](https://img.shields.io/github/stars/YOUR_USERNAME/YOUR_REPO?style=social)](https://github.com/YOUR_USERNAME/YOUR_REPO)
 
-This repository provides:
-- Step-by-step documentation
-- Minimal, reliable scripts
-- A clean post-download organization strategy
+*Focused on WSI acquisition • Case-centric organization • Zero preprocessing overhead*
 
-**Scope is intentionally limited** to:
-> Download → Verify → Organize  
-No analysis, no modeling, no preprocessing beyond organization.
+</div>
 
 ---
 
-## 1. What This Repository Does
+## 📌 Overview
 
-This repository helps you:
+This repository provides a clean, minimal workflow for **downloading and organizing TCGA data**, with a strong emphasis on **Whole-Slide Images (WSI)** and a **case-centric folder structure**.
 
-- Download TCGA metadata (files, clinical, annotations)
-- Download large files (WSI `.svs`) using the **GDC Data Transfer Tool**
-- Verify download integrity
-- Organize slides into **case-level folders**
-- Preserve original GDC UUID-based structure
-- Produce clean mapping tables for downstream use
+> **Scope is intentionally narrow:**
+> ```
+> Download  →  Verify  →  Organize
+> ```
+> No modeling. No tiling. No feature extraction. Just reliable, reproducible data acquisition.
 
----
+**What you get:**
+- ✅ Step-by-step documentation from metadata to organized slides
+- ✅ Minimal, well-commented Python scripts
+- ✅ Clean mapping tables ready for downstream pipelines
+- ✅ GDC UUID-based structure preserved throughout
 
-## 2. What This Repository Does NOT Do
-
-This repository does **not**:
-- Train machine learning models
-- Tile or preprocess slides
-- Perform feature extraction
-- Modify raw TCGA data
-- Perform statistical or survival analysis
-
-Those steps are intentionally left to downstream pipelines.
+**What this repo does NOT do:**
+- ❌ Train ML models or perform statistical analysis
+- ❌ Tile, preprocess, or modify raw TCGA data
+- ❌ Perform feature extraction or survival analysis
 
 ---
 
-## 3. Repository Structure
-
-```text
-TCGA-DOWNLOAD-GUIDE/
-├─ docs/                      # Step-by-step documentation
-│  ├─ 01_tcga_overview.md
-│  ├─ 01-complete_download_guide.md
-│  ├─ 02_metadata_and_manifests.md
-│  ├─ 03_slide_download_with_gdc_client.md
-│  └─ 04_post_download_organization.md
-│
-├─ scripts/                   # Minimal automation scripts
-│  ├─ S00_paths_config.py
-│  ├─ S01_parse_files_json_build_slide_map.py
-│  ├─ S02_index_raw_gdc_slides.py
-│  └─ S03_organize_slides_by_case.py
-│
-├─ LICENSE
-├─ README.md
-└─ requirements.txt
+## 📁 Repository Structure
 
 ```
+TCGA-DOWNLOAD-GUIDE/
+│
+├── docs/                                    # Step-by-step documentation
+│   ├── 01_tcga_overview.md                  # TCGA concepts & identifiers
+│   ├── 01-complete_download_guide.md        # End-to-end overview
+│   ├── 02_metadata_and_manifests.md         # Files metadata & manifests
+│   ├── 03_slide_download_with_gdc_client.md # Downloading .svs files safely
+│   └── 04_post_download_organization.md    # Organizing slides by case
+│
+├── scripts/                                 # Minimal automation scripts
+│   ├── S00_paths_config.py                  # Central path configuration
+│   ├── S01_parse_files_json_build_slide_map.py
+│   ├── S02_index_raw_gdc_slides.py
+│   └── S03_organize_slides_by_case.py
+│
+├── requirements.txt
+├── LICENSE
+└── README.md
+```
 
-## 4. Prerequisites
-Software
+---
 
-- Python ≥ 3.8
-- pandas, tqdm
-- GDC Data Transfer Tool (gdc-client)
-- Install Python dependencies: pip install -r requirements.txt
-- Install gdc-client from: https://gdc.cancer.gov/access-data/gdc-data-transfer-tool
+## ⚙️ Prerequisites
 
-5. Recommended Reading Order
+| Requirement | Details |
+|---|---|
+| **Python** | ≥ 3.8 |
+| **Dependencies** | `pandas`, `tqdm` |
+| **GDC Client** | [gdc-data-transfer-tool](https://gdc.cancer.gov/access-data/gdc-data-transfer-tool) |
 
-Read the documentation in order:
+```bash
+pip install -r requirements.txt
+```
 
-1. docs/01_tcga_overview.md
--   TCGA concepts, identifiers, data categories
-2. docs/01-complete_download_guide.md
--   End-to-end overview
-3. docs/02_metadata_and_manifests.md
--   Files metadata and manifests
-4. docs/03_slide_download_with_gdc_client.md
--   Downloading .svs files safely
-5. docs/04_post_download_organization.md
--   Organizing slides by case
+---
 
+## 📖 Recommended Reading Order
 
-6. Typical Workflow (Use Case: BRCA)
-Step 1 — Download metadata from GDC Portal
+Read the documentation sequentially for the smoothest experience:
 
-- Files metadata (Files_TCGA-BRCA.json)
-- Clinical metadata (Clinical_TCGA-BRCA.json)
-- (Optional) Annotations
-- Store under a project metadata folder.
+| Step | File | Description |
+|------|------|-------------|
+| 1 | `docs/01_tcga_overview.md` | TCGA concepts, identifiers, data categories |
+| 2 | `docs/01-complete_download_guide.md` | End-to-end overview |
+| 3 | `docs/02_metadata_and_manifests.md` | Files metadata and manifests |
+| 4 | `docs/03_slide_download_with_gdc_client.md` | Downloading `.svs` files safely |
+| 5 | `docs/04_post_download_organization.md` | Organizing slides by case |
 
-Step 2 — Download slides with gdc-client
+---
 
+## 🚀 Typical Workflow — TCGA-BRCA Example
 
+### Step 1 — Download Metadata from GDC Portal
+
+From the [GDC Data Portal](https://portal.gdc.cancer.gov/), download:
+- `Files_TCGA-BRCA.json` — files metadata
+- `Clinical_TCGA-BRCA.json` — clinical metadata
+- *(Optional)* Annotations
+
+Store these under a dedicated project metadata folder.
+
+---
+
+### Step 2 — Download & Verify Slides
+
+```bash
+# Download slides
 gdc-client download \
   -m BRCA_Manifest.txt \
   -d raw_gdc/
 
-Verify:
-
+# Verify integrity
 gdc-client verify \
   -m BRCA_Manifest.txt \
   -d raw_gdc/
+```
 
+> ⚠️ Ensure **no `.svs.partial` files** remain before proceeding.
 
-Ensure:
+---
 
-No .svs.partial files remain
+### Step 3 — Configure Paths
 
+Edit `scripts/S00_paths_config.py` and set:
 
-Step 3 — Configure paths
+```python
+RAW_GDC_DIR   = "/path/to/raw_gdc/"
+ORGANIZED_DIR = "/path/to/organized/"
+# + metadata file paths
+```
 
-Edit:
+---
 
-scripts/S00_paths_config.py
+### Step 4 — Build Slide-to-Case Mapping
 
-
-Set:
-- RAW_GDC_DIR
-- ORGANIZED_DIR
-- Metadata file paths
-
-Step 4 — Build slide-to-case mapping
+```bash
 python scripts/S01_parse_files_json_build_slide_map.py
+```
 
+**Output:** `organized/tables/slide_case_map.csv`
 
-Output:
+---
 
-organized/tables/slide_case_map.csv
+### Step 5 — Index Downloaded Slides
 
-Step 5 — Index downloaded slides
+```bash
 python scripts/S02_index_raw_gdc_slides.py
+```
 
+**Output:** `organized/tables/raw_gdc_slide_index.csv`
 
-Output:
+---
 
-organized/tables/raw_gdc_slide_index.csv
+### Step 6 — Organize Slides by Case
 
-Step 6 — Organize slides by case (dry run)
+```bash
+# Dry run first — inspect the report
 python scripts/S03_organize_slides_by_case.py
 
+# Then rerun with copying enabled
+```
 
-Inspect the report.
-If correct, rerun with copying enabled.
+---
 
-7. Final Output Structure
+## 📂 Final Output Structure
 
-
+```
 organized/
-  slides/
-    TCGA-XX-YYYY/
-      slide1.svs
-      slide2.svs
-  tables/
-    slide_case_map.csv
-    raw_gdc_slide_index.csv
-    slide_organization_report.csv
+├── slides/
+│   ├── TCGA-XX-YYYY/
+│   │   ├── slide1.svs
+│   │   └── slide2.svs
+│   └── TCGA-XX-ZZZZ/
+│       └── slide1.svs
+└── tables/
+    ├── slide_case_map.csv
+    ├── raw_gdc_slide_index.csv
+    └── slide_organization_report.csv
+```
 
+- Multiple slides per case are fully supported
+- The original `raw_gdc/` directory remains **untouched**
 
-- Multiple slides per case are supported
-- Original raw_gdc/ remains untouched
+---
 
+## 🔁 Reproducibility & Best Practices
 
+- 🗂️ Keep raw GDC downloads **unchanged** at all times
+- 📌 Version-control only small tables and scripts — not raw data
+- 🔖 Reuse manifests to guarantee **exact reproducibility**
+- 📝 Document project-specific assumptions externally
 
-8. Reproducibility and Best Practices
-- Always keep raw GDC downloads unchanged
-- Version-control only small tables and scripts
-- Reuse manifests for exact reproducibility
-- Document project-specific assumptions externally
+---
 
+## 🌟 Support This Project
 
+If this repository saved you time or helped your research, please consider:
 
+<div align="center">
 
-10. Citation / Acknowledgment
+**⭐ Starring the repository** — it helps others discover this toolkit and motivates continued maintenance.
 
-- If you find this repository useful, please star it and acknowledge:
-- The TCGA Research Network
-- The NCI Genomic Data Commons (GDC)
+[![GitHub stars](https://img.shields.io/github/stars/YOUR_USERNAME/YOUR_REPO?style=for-the-badge&logo=github&color=yellow)](https://github.com/YOUR_USERNAME/YOUR_REPO/stargazers)
 
+</div>
 
+You can also contribute by:
+- 🐛 Opening an [issue](https://github.com/YOUR_USERNAME/YOUR_REPO/issues) to report bugs or suggest improvements
+- 🔀 Submitting a pull request with enhancements
+- 📣 Sharing this repo with colleagues working with TCGA data
 
+---
 
+## 📜 Acknowledgments
 
+This toolkit builds on infrastructure provided by:
 
+- **The TCGA Research Network** — for making large-scale cancer genomics data publicly available
+- **NCI Genomic Data Commons (GDC)** — for the data portal and transfer tooling
 
+> If you use TCGA data in a publication, please acknowledge the TCGA Research Network per their [citation guidelines](https://www.cancer.gov/tcga).
 
+---
 
-
-
-
-
-
+<div align="center">
+  <sub>Built for reproducible cancer genomics research · Contributions welcome</sub>
+</div>
