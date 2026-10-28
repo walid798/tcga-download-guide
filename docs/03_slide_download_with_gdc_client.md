@@ -1,87 +1,100 @@
-# Downloading TCGA Slides with the GDC Data Transfer Tool
+# 03 · Downloading Slides with the GDC Data Transfer Tool
 
-## 1. Why Use the GDC Data Transfer Tool?
-
-Whole-slide images (.svs) are large (hundreds of MBs to GBs).
-They must be downloaded using the official **GDC Data Transfer Tool**.
-
-Advantages:
-- Resume interrupted downloads
-- Verify file integrity
-- Handle large datasets safely
+Whole-slide images are large (hundreds of MB to several GB each). Use the official **GDC Data Transfer Tool** (`gdc-client`): it resumes interrupted downloads and checks each file's md5 checksum automatically.
 
 ---
 
-## 2. Preparing a Slide Manifest
+## 1. Install `gdc-client`
 
-### Option A: GDC Portal (Recommended)
+1. Download it for your OS: [https://gdc.cancer.gov/access-data/gdc-data-transfer-tool](https://gdc.cancer.gov/access-data/gdc-data-transfer-tool)
+2. Unzip it and put the executable in a folder on your `PATH`.
+3. Check the installation:
 
-1. Go to the GDC Portal
-2. Filter:
-   - Project: TCGA-XXXX
-   - Data Category: Biospecimen
-   - Data Type: Slide Image
-3. Add all files to cart
-4. Download the manifest
+```bash
+gdc-client --version
+```
 
-## 3. Running the Download
+> The tool can live anywhere; the download location is set with `-d`.
 
-### Phase 1. Install GDC Data Transfer Tool
+---
 
+## 2. Download
 
-1. Download the latest version from here: https://gdc.cancer.gov/access-data/gdc-data-transfer-tool
-2. Move to a directory in your PATH
-3. Verify installation: cmd: gdc-client --version
+```bash
+gdc-client download -m manifests/gdc_manifest_TCGA-BRCA_slides.txt  -d raw_gdc/ -n 4 --retry-amount 5
+```
 
+| Option               | Meaning                                         |
+| -------------------- | ----------------------------------------------- |
+| `-m`               | Manifest file                                   |
+| `-d`               | Output directory                                |
+| `-n`               | Number of parallel connections                  |
+| `--retry-amount`   | Retries per failed file                         |
+| `--no-annotations` | Do not save annotation files next to each slide |
 
+Windows example:
 
-### Phase 2: Download Metadata
+```powershell
+gdc-client download -m D:\TCGA_Projects\TCGA-BRCA\manifests\gdc_manifest_TCGA-BRCA_slides.txt -d D:\TCGA_Projects\TCGA-BRCA\raw_gdc
+```
 
-**Goal**: Download all small metadata files that describe the available data.
+---
 
+## 3. What `raw_gdc/` looks like
 
-This includes information about ALL files available for download.
+```text
+raw_gdc/
+├── 5e92f89e-5470-4f37-9002-0bb397e7281b/
+│   ├── 5e92f89e-5470-4f37-9002-0bb397e7281b.log
+│   └── TCGA-E9-A1N9-01Z-00-DX1.982C83A6-0E06-47B3-A7C7-1773A2CD1771.svs
+├── d46167af-6c29-49c7-95cf-3a801181aca4/
+│   ├── d46167af-6c29-49c7-95cf-3a801181aca4.log
+│   └── TCGA-3C-AALI-01Z-00-DX1.F6E9A5DF-D8FB-45CF-B4BD-C6B76294C291.svs.partial   ← still downloading
+└── ...
+```
 
+- One folder per **file UUID**.
+- While downloading, the slide ends with `.svs.partial`; when complete, `.partial` is removed.
+- Some folders may also contain an `annotations.txt` file.
 
-We can download the metadata of specific cases by following these steps:
-1. Go to: https://portal.gdc.cancer.gov
-2. Select "Repository": https://portal.gdc.cancer.gov/analysis_page?app=Downloads
-3. Expand the cases and select TCGA program
-4. After that you can select any project type (eg,. BRCA, LUAD,...)
-5. Now the number of cases are filtered to the selection we did.
-6. Form left panel we need to filter and choose the type of data we need from the shown categories (Experimental Strategy, Wgs Coverage, Data Category, Data Type, Data Format, Workflow Type, ...)
-7. For downloading Download slides (.svs), In Experimental Strategy we choose Diagnostic Slide. (Optional File Format: SVS)
-8. Download Manifest file for the selected data.
-9. Save as (for example): D:\TCGA_Projects\TCGA-BRCA\manifest_brca_slides.txt
+---
 
+## 4. Verify the download
 
-### Phase 3: Download slides (.svs) with gdc-client
-1. Extract and save the downloaded GDC Data Transfer Tool in the location you want to save the slides in.
-2. Open the terminal in the same location and write the command:
-gdc-client download -m D:\TCGA_Projects\TCGA-BRCA\manifest_brca_slides.txt  -d D:\TCGA_Projects\TCGA-BRCA\raw_gdc
--   -m >> manifest
--   -d >> save directory 
-3. Directory structure created by gdc-client:
-After (or during) download, raw_gdc will look like:
+`gdc-client` has **no separate `verify` command**. Integrity is checked during download:
 
-D:\TCGA_Projects\TCGA-BRCA\raw_gdc\
-    b201cdba-9dbd-4a5d-b507-d1acd9aeecb5\
-        b201cdba-9dbd-4a5d-b507-d1acd9aeecb5.log
-        TCGA-B2-4099-01A-02-BS2.cda80782-5212-4aef-80dc-abebaa70621e.svs.partial
-    3e482a11-...\
-        3e482a11-....log
-        TCGA-...something.svs.partial
-    ...
-4. Key points:
--   Each file UUID (e.g. b201cdba-9dbd-4a5d-b507-d1acd9aeecb5) gets its own folder.
--   Inside each folder:
--   A *.log file with transfer logs.
--   The actual slide file:
-- While downloading: *.svs.partial
-- Once complete: *.svs (the .partial suffix disappears).
+1. **Re-run the same command.** Completed files are skipped and `.partial` files resume.
+   Repeat until the run reports no failures.
+2. **Check that no `.partial` files remain:**
+   ```bash
+   python scripts/S02_index_raw_slides.py          # reports any *.partial files
+   ```
+3. *(Optional)* **Re-check md5 checksums** against the metadata:
+   ```bash
+   python scripts/S02_index_raw_slides.py --md5    # slow: reads every file
+   ```
 
-5. Verify completion: Ensure that:
--   No files are reported as missing or corrupted.
--   There are no *.partial files left.
--   If .partial remains, the download was interrupted; re-run gdc-client download with the same manifest and directory, it will resume.
--   At this point, all slides are present in raw_gdc in the official GDC structure.
+---
+
+## 5. Troubleshooting
+
+### "Can't move files" on Windows
+
+`gdc-client` may write into a temporary folder on `C:` first and then move the file. If `C:` is full or the TEMP folder is locked, the move fails. Point TEMP to the target drive for the current PowerShell session, then run `gdc-client` from **the same window**:
+
+```powershell
+mkdir D:\TempTCGA -Force | Out-Null
+$env:TEMP = "D:\TempTCGA"
+$env:TMP  = "D:\TempTCGA"
+gdc-client download -m manifest.txt -d D:\TCGA_Projects\TCGA-BRCA\raw_gdc
+```
+
+### Other common issues
+
+| Problem                      | Fix                                                                 |
+| ---------------------------- | ------------------------------------------------------------------- |
+| Download stops or times out  | Re-run the same command; it resumes                                 |
+| Disk fills up                | Check total size first (sum of the `size` column in the manifest) |
+| Controlled-access files fail | Slides are open access; controlled data need `-t token.txt`       |
+
+Next: [04 · Post-download organization](04_post_download_organization.md)

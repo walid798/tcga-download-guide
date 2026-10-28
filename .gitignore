@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local data — never commit WSIs or downloads
+raw_gdc/
+organized/
+*.svs
+*.partial
+*.log

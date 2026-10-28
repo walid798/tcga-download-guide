@@ -1,126 +1,85 @@
-# Metadata and Manifest Files in TCGA
+# 02 · Metadata and Manifest Files
 
-## 1. Purpose of Metadata Files
+Two small files drive the whole workflow. Download **both** for the same selection of files.
 
-Metadata files describe:
-- Which files exist
-- Which case each file belongs to
-- File type, format, size, and access level
-
-Metadata is essential for:
-- Mapping files to cases
-- Building manifests
-- Organizing downloaded data
-- Reproducibility
+| File     | Format         | Used by          | Purpose                                  |
+| -------- | -------------- | ---------------- | ---------------------------------------- |
+| Manifest | TSV (`.txt`) | `gdc-client`   | Which files to download                  |
+| Metadata | JSON           | `S01`–`S04` | Map each file UUID to its slide and case |
 
 ---
 
-## 2. Core Metadata File Types
+## 1. Selecting the slides in the GDC portal
 
-### 2.1 Files Metadata (`Files_TCGA-*.json`)
+1. Open [https://portal.gdc.cancer.gov/](https://portal.gdc.cancer.gov/) → **Repository**.
+2. Filter the **Cases** panel: Program = `TCGA`, Project = e.g. `TCGA-BRCA`.
+3. Filter the **Files** panel:
+   - Data Category = `Biospecimen`
+   - Data Type = `Slide Image`
+   - Experimental Strategy = `Diagnostic Slide` (DX) and/or `Tissue Slide` (TS/BS)
+   - *(optional)* Data Format = `SVS`
+4. Add all files to the **Cart**.
+5. From the Cart, download:
+   - the **Manifest** → save as `manifests/gdc_manifest_TCGA-BRCA_slides.txt`
+   - the **Metadata** (JSON) → save as `metadata/Metadata_TCGA-BRCA.json`
 
-Contains one entry per file in a TCGA project.
-
-Key fields:
-- `file_id` (UUID)
-- `file_name`
-- `data_category`
-- `data_type`
-- `data_format`
-- `cases.submitter_id`
-
-This file is the **authoritative source** for mapping:
-
-UUID → filename → case
-
+> **Naming matters.** The scripts look for `METADATA_DIR/Metadata_<PROJECT_ID>.json`.
 
 ---
 
-### 2.2 Clinical Metadata (`Clinical_TCGA-*.json`)
+## 2. Manifest file
 
-Contains patient-level information:
-- Demographics
-- Diagnosis
-- Tumor stage
-- Survival data
+A tab-separated file read by `gdc-client`. One row per file:
 
-This file must be:
-- Flattened
-- Normalized
-- Cleaned into a CSV
+```
+id	filename	md5	size	state
+5e92f89e-5470-4f37-9002-0bb397e7281b	TCGA-E9-A1N9-01Z-00-DX1.982C83A6-....svs	5bbdf578...	514738671	released
+```
+
+The manifest makes downloads **resumable**, **verifiable** (md5 + size) and **reproducible** (the same manifest always gives the same files).
 
 ---
 
-### 2.3 Annotations (`Annotation_TCGA-*.json`)
+## 3. Metadata JSON
 
-Contains curated notes and flags:
-- Sample quality issues
-- Known artifacts
-- Exclusion warnings
+One record per file. The fields the scripts use:
 
-Annotations should be joined with case-level tables
-to flag problematic data.
+```json
+{
+  "file_id": "5e92f89e-5470-4f37-9002-0bb397e7281b",
+  "file_name": "TCGA-E9-A1N9-01Z-00-DX1.982C83A6-0E06-47B3-A7C7-1773A2CD1771.svs",
+  "data_category": "Biospecimen",
+  "data_type": "Slide Image",
+  "experimental_strategy": "Diagnostic Slide",
+  "md5sum": "5bbdf57893a688b24d219c4cc712bc7d",
+  "file_size": 514738671,
+  "associated_entities": [
+    { "entity_type": "slide", "entity_submitter_id": "TCGA-E9-A1N9-01Z-00-DX1", "case_id": "994ca1f5-..." }
+  ]
+}
+```
 
----
+- **Case ID** = first three parts of `entity_submitter_id` → `TCGA-E9-A1N9`.
+- `associated_entities[].case_id` is the case **UUID**, not the case submitter ID.
+- Some projects also include an `annotations` list (curated notes, e.g. prior malignancy).
+  `S01` counts them in the `n_annotations` column so you can review those cases.
 
-## 3. Manifest Files (`*_Manifest.txt`)
-
-A **manifest** is a TSV file used by the GDC Data Transfer Tool.
-
-Each row corresponds to one file and includes:
-- UUID
-- File size
-- Checksum
-
-Manifests allow:
-- Resumable downloads
-- Verification
-- Reproducibility
-
----
-
-## 4. How Metadata and Manifests Work Together
-
-Workflow:
-1. Use metadata to identify files of interest
-2. Generate or download a manifest
-3. Use the manifest to download large files
-4. Use metadata again to organize downloaded files
+`S01` also accepts a GDC **API** `/files` response (records with `cases[].submitter_id`).
 
 ---
 
-## 5. Recommended Storage Layout
+## 4. Recommended storage layout
 
 ```text
-metadata/
-  raw/
-    Files_TCGA-BRCA.json
-    Clinical_TCGA-BRCA.json
-    Annotation_TCGA-BRCA.json
-  manifests/
-    BRCA_Manifest.txt
-
-These files should be preserved unchanged.
+TCGA_Projects/TCGA-BRCA/
+├── manifests/
+│   └── gdc_manifest_TCGA-BRCA_slides.txt
+├── metadata/
+│   └── Metadata_TCGA-BRCA.json
+├── raw_gdc/          # gdc-client output — keep unchanged
+└── organized/        # created by the scripts
 ```
-## 6. Troubleshooting: "Can't move files" (GDC Transfer Tool / gdc-client on Windows)
 
-On Windows, the GDC Transfer Tool may **download into a temporary cache on `C:`** first, then **move** files to your target directory.  
-If `C:` is low on space (or the TEMP directory is locked), you may see errors like **"can't move the files"**.
+Keep manifests and metadata unchanged; they are the record of exactly what you downloaded.
 
-### Quick fix (temporary, recommended): set TEMP/TMP to the target drive (one session)
-
-1. Create a temp folder on the same drive where you want to store downloads (example: `D:`).
-2. Set `TEMP` and `TMP` for the current PowerShell session.
-3. Launch the Transfer Tool from the same terminal (so it inherits the variables).
-
-```powershell
-# Example: target drive is D:
-mkdir D:\TempTCGA -Force | Out-Null
-$env:TEMP="D:\TempTCGA"
-$env:TMP="D:\TempTCGA"
-
-# Option A: if you use gdc-client CLI
-gdc-client download -m manifest.txt -d D:\TCGA
-
-# Option B: if you use the GUI Transfer Tool, launch it from here
-# & "C:\Path\To\GDCTransferTool.exe"
+Next: [03 · Downloading slides with gdc-client](03_slide_download_with_gdc_client.md)
